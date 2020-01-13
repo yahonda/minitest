@@ -224,7 +224,12 @@ class Object
 
     metaclass.send :define_method, name do |*args, **kwargs, &blk|
       if val_or_callable.respond_to? :call then
-        val_or_callable.call(*args, **kwargs, &blk)
+        if RUBY_VERSION >= '2.7.0'
+          val_or_callable.call(*args, **kwargs, &blk)
+        else
+          args << kwargs if kwargs.any?
+          val_or_callable.call(*args, &blk)
+        end
       else
         blk.call(*block_args) if blk
         val_or_callable
